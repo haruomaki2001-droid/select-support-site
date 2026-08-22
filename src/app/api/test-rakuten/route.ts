@@ -1,4 +1,28 @@
 import { NextResponse } from "next/server";
+import https from "https";
+
+function fetchWithReferer(url: string, referer: string): Promise<{ status: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const req = https.get(
+      url,
+      {
+        headers: {
+          Referer: referer,
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+      },
+      (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () =>
+          resolve({ status: res.statusCode ?? 500, body: data })
+        );
+      }
+    );
+    req.on("error", reject);
+  });
+}
 
 export async function GET() {
   const appId = process.env.RAKUTEN_APP_ID;
@@ -18,17 +42,17 @@ export async function GET() {
   url.searchParams.set("applicationId", appId);
   url.searchParams.set("accessKey", accessKey);
   url.searchParams.set("keyword", "エアコン");
-  url.searchParams.set("hits", "3"); // テストなので3件だけ取得
+  url.searchParams.set("hits", "3");
 
   try {
-    const res = await fetch(url.toString());
-    const data = await res.json();
+    const { status, body } = await fetchWithReferer(
+      url.toString(),
+      "https://select-support-site.select-support-site.workers.dev"
+    );
+    const data = JSON.parse(body);
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { status: res.status, error: data },
-        { status: res.status }
-      );
+    if (status !== 200) {
+      return NextResponse.json({ status, error: data }, { status });
     }
 
     return NextResponse.json(data);

@@ -6,9 +6,19 @@ import Link from "next/link";
 import { categories } from "../data/categories";
 import CategorySection from "./CategorySection";
 
+type CategoryChild = {
+  name: string;
+};
+
+type SelectedCategory = {
+  name: string;
+  children?: CategoryChild[];
+};
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<SelectedCategory | null>(null);
   const [isSecondOpen, setIsSecondOpen] = useState(false);
   
 
@@ -229,7 +239,7 @@ export default function Header() {
     <div className="border-t border-[#CBCBCB]" />
 
     <div className="mt-2 grid flex-1 content-start grid-cols-2 gap-[4px] px-4 overflow-y-auto min-h-0 px-4 overflow-y-auto min-h-0">
-      {selectedCategory.children?.map((child: any) => (
+      {selectedCategory.children?.map((child) => (
         <Link
           key={child.name}
           href="#"

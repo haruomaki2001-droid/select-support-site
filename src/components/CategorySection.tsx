@@ -6,7 +6,11 @@ import { useRef, useState } from "react";
 
 type CategoryItem = {
   name: string;
-  children?: any[];
+  children?: CategoryChild[];
+};
+
+type CategoryChild = {
+  name: string;
 };
 
 type Props = {
