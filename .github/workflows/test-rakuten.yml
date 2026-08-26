@@ -7,16 +7,47 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Top Level Genres
+      - name: Survey genre tree and item counts
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
         run: |
-          curl -s -G "https://openapi.rakuten.co.jp/ichibagt/api/IchibaGenre/Search/20260401" \
-            -H "accessKey: ${RAKUTEN_ACCESS_KEY}" \
-            -H "Origin: https://supisho.com" \
-            -H "Referer: https://supisho.com" \
-            --data-urlencode "applicationId=${RAKUTEN_APPLICATION_ID}" \
-            --data-urlencode "format=json" \
-            --data-urlencode "genreId=0"
-            
+          set -e
+          GENRE_URL="https://openapi.rakuten.co.jp/ichibagt/api/IchibaGenre/Search/20260401"
+          PRODUCT_URL="https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801"
+
+          call_genre() {
+            curl -s -G "$GENRE_URL" \
+              -H "accessKey: ${RAKUTEN_ACCESS_KEY}" \
+              -H "Origin: https://supisho.com" \
+              -H "Referer: https://supisho.com" \
+              --data-urlencode "applicationId=${RAKUTEN_APPLICATION_ID}" \
+              --data-urlencode "format=json" \
+              --data-urlencode "genreId=$1"
+            sleep 1
+          }
+
+          call_count() {
+            curl -s -G "$PRODUCT_URL" \
+              -H "accessKey: ${RAKUTEN_ACCESS_KEY}" \
+              -H "Origin: https://supisho.com" \
+              -H "Referer: https://supisho.com" \
+              --data-urlencode "applicationId=${RAKUTEN_APPLICATION_ID}" \
+              --data-urlencode "format=json" \
+              --data-urlencode "genreId=$1" \
+              --data-urlencode "hits=1"
+            sleep 1
+          }
+
+          for GENRE in 562637 211742 100026 564500; do
+            echo "===== [LEVEL1] Genre $GENRE : children ====="
+            CHILDREN_JSON=$(call_genre "$GENRE")
+            echo "$CHILDREN_JSON"
+
+            CHILD_IDS=$(echo "$CHILDREN_JSON" | grep -o '"genreId":[0-9]*,"nameJa":"[^"]*","level":2' | grep -o '"genreId":[0-9]*' | grep -o '[0-9]*')
+
+            for CHILD in $CHILD_IDS; do
+              echo "----- [LEVEL2] Genre $CHILD : product count -----"
+              call_count "$CHILD"
+            done
+          done
