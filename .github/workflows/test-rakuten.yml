@@ -1,4 +1,4 @@
-name: Test Rakuten API
+name: Test Rakuten Product Details
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Rakuten Product API test
+      - name: Rakuten Product Details test
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
@@ -18,5 +18,5 @@ jobs:
             --data-urlencode "format=json" \
             --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
             --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
-            --data-urlencode "keyword=ノートパソコン" \
+            --data-urlencode "keyword=iPhone" \
             --data-urlencode "hits=5"
