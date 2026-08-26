@@ -7,20 +7,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Rakuten API (latest version, current IP)
+      - name: Call Rakuten Product Search API
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
         run: |
-          echo "=== Runner Outbound IP ==="
-          curl -s https://api.ipify.org
-          echo ""
-          echo "=== Rakuten API (version 20260401, supisho.com) ==="
-          curl -s -G "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401" \
+          curl -s -G "https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801" \
             -H "accessKey: ${RAKUTEN_ACCESS_KEY}" \
             -H "Origin: https://supisho.com" \
             -H "Referer: https://supisho.com" \
             --data-urlencode "applicationId=${RAKUTEN_APPLICATION_ID}" \
             --data-urlencode "format=json" \
-            --data-urlencode "keyword=テスト" \
-            --data-urlencode "hits=1"
+            --data-urlencode "keyword=スマートフォン" \
+            --data-urlencode "hits=2"
