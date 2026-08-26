@@ -7,16 +7,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Rakuten Product Search API
+      - name: Get Top Level Genres
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
         run: |
-          curl -s -G "https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801" \
+          curl -s -G "https://openapi.rakuten.co.jp/ichibagt/api/IchibaGenre/Search/20260401" \
             -H "accessKey: ${RAKUTEN_ACCESS_KEY}" \
             -H "Origin: https://supisho.com" \
             -H "Referer: https://supisho.com" \
             --data-urlencode "applicationId=${RAKUTEN_APPLICATION_ID}" \
             --data-urlencode "format=json" \
-            --data-urlencode "keyword=スマートフォン" \
-            --data-urlencode "hits=2"
+            --data-urlencode "genreId=0"
+            
