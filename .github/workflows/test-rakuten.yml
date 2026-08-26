@@ -1,0 +1,22 @@
+name: Test Rakuten API
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Rakuten API with Referer
+        env:
+          RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+        run: |
+          curl -G "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601" \
+            -H "accessKey: ${RAKUTEN_ACCESS_KEY}" \
+            -H "Origin: https://supisho.com" \
+            -H "Referer: https://supisho.com" \
+            --data-urlencode "applicationId=${RAKUTEN_APPLICATION_ID}" \
+            --data-urlencode "format=json" \
+            --data-urlencode "keyword=テスト" \
+            --data-urlencode "hits=1"
