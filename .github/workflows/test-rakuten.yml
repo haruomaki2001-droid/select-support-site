@@ -1,4 +1,5 @@
-name: Test Rakuten Product Details
+```yaml
+name: Test Rakuten Ranking
 
 on:
   workflow_dispatch:
@@ -8,23 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Rakuten Product Details test
+      - name: Rakuten Smartphone Ranking test
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
         run: |
-          for KEYWORD in "iPhone" "ノートパソコン" "マウス"; do
-            echo "========================================"
-            echo "SEARCH: $KEYWORD"
-            echo "========================================"
+          echo "========================================"
+          echo "SMARTPHONE RANKING"
+          echo "========================================"
 
-            curl -G "https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801" \
-              -H "Origin: https://supisho.com" \
-              --data-urlencode "format=json" \
-              --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
-              --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
-              --data-urlencode "keyword=$KEYWORD" \
-              --data-urlencode "hits=5"
-            
-            echo
-          done
+          curl -G "https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628" \
+            --data-urlencode "format=json" \
+            --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
+            --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
+            --data-urlencode "genreId=560202" \
+            --data-urlencode "period=day" \
+            --data-urlencode "page=1" \
+            --data-urlencode "hits=5"
+
+          echo
+```
