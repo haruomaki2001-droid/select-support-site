@@ -1,4 +1,3 @@
-```yaml
 name: Test Rakuten Ranking
 
 on:
@@ -18,14 +17,11 @@ jobs:
           echo "SMARTPHONE RANKING"
           echo "========================================"
 
-          curl -G "https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628" \
+          curl -G "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601" \
             --data-urlencode "format=json" \
             --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
             --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
             --data-urlencode "genreId=560202" \
-            --data-urlencode "period=day" \
-            --data-urlencode "page=1" \
-            --data-urlencode "hits=5"
+            --data-urlencode "page=1"
 
           echo
-```
