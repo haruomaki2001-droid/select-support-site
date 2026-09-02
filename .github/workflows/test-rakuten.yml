@@ -1,4 +1,4 @@
-name: Test Rakuten Product Details by Keyword
+name: Test Rakuten Weekly Smartphone Ranking
 
 on:
   workflow_dispatch:
@@ -8,17 +8,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Search SH-M33
+      - name: Get weekly smartphone ranking
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
         run: |
-          curl -sS -G "https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801" \
+          curl -sS -G "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601" \
             -H "Origin: https://supisho.com" \
             -H "Referer: https://supisho.com/" \
             --data-urlencode "format=json" \
+            --data-urlencode "formatVersion=2" \
             --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
             --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
-            --data-urlencode "keyword=SH-M33" \
-            --data-urlencode "hits=30" \
-          | jq '.Products[]?.Product | {productId, productCode, productName, productNo, brandName, ProductDetails}'
+            --data-urlencode "genreId=560202" \
+            --data-urlencode "period=weekly" \
+            --data-urlencode "page=1" \
+          | jq .
