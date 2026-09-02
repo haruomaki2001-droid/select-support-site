@@ -1,4 +1,4 @@
-name: Test Rakuten Product Details by Product ID
+name: Test Rakuten Product Details by Keyword
 
 on:
   workflow_dispatch:
@@ -8,23 +8,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get ProductDetails by Product ID
+      - name: Search SH-M33
         env:
           RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
         run: |
-          echo "========================================"
-          echo "PRODUCT DETAILS BY PRODUCT ID"
-          echo "========================================"
-          echo "productId: 11b746a04bbc79d99da5250e223d6fc5"
-          echo "========================================"
-
           curl -sS -G "https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801" \
             -H "Origin: https://supisho.com" \
             -H "Referer: https://supisho.com/" \
             --data-urlencode "format=json" \
             --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
             --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
-            --data-urlencode "productId=11b746a04bbc79d99da5250e223d6fc5" \
-            --data-urlencode "hits=1" \
-          | jq '.Products[0].Product | {productId, productCode, productName, ProductDetails}'
+            --data-urlencode "keyword=SH-M33" \
+            --data-urlencode "hits=30" \
+          | jq '.Products[]?.Product | {productId, productCode, productName, productNo, brandName, ProductDetails}'
