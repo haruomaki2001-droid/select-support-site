@@ -1,26 +1,102 @@
-name: Test Rakuten Weekly Smartphone Ranking
+name: Test Rakuten Weekly Ranking
 
 on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test-ranking:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get weekly smartphone ranking
-        env:
-          RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
-          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+      - name: Fetch current Rakuten weekly ranking
         run: |
-          curl -sS -G "https://openapi.rakuten.co.jp/ichibaranking/api/IchibaItem/Ranking/20220601" \
-            -H "Origin: https://supisho.com" \
-            -H "Referer: https://supisho.com/" \
-            --data-urlencode "format=json" \
-            --data-urlencode "formatVersion=2" \
-            --data-urlencode "applicationId=$RAKUTEN_APPLICATION_ID" \
-            --data-urlencode "accessKey=$RAKUTEN_ACCESS_KEY" \
-            --data-urlencode "genreId=560202" \
-            --data-urlencode "period=weekly" \
-            --data-urlencode "page=1" \
-          | jq .
+          set -euo pipefail
+
+          URL="https://ranking.rakuten.co.jp/weekly/560202/"
+
+          curl -L \
+            --fail \
+            --silent \
+            --show-error \
+            -A "Mozilla/5.0" \
+            "$URL" \
+            -o rakuten-ranking.html
+
+          echo "===== HTML SIZE ====="
+          wc -c rakuten-ranking.html
+
+          echo "===== RANKING PAGE INFO ====="
+
+          python3 - <<'PY'
+          import html
+          import re
+          from pathlib import Path
+
+          text = Path("rakuten-ranking.html").read_text(
+              encoding="utf-8",
+              errors="ignore"
+          )
+
+          # HTMLタグを除去したテキスト
+          plain = re.sub(r"<[^>]+>", " ", text)
+          plain = html.unescape(plain)
+          plain = re.sub(r"\s+", " ", plain)
+
+          # 更新日
+          m = re.search(
+              r"20\d{2}年\d{1,2}月\d{1,2}日[^<]{0,30}更新",
+              plain
+          )
+          if m:
+              print("更新日:", m.group(0))
+
+          # 集計日
+          m = re.search(
+              r"集計日[：:]\s*[^<]{1,80}",
+              plain
+          )
+          if m:
+              print("集計日:", m.group(0))
+
+          print()
+          print("===== PRODUCT LINKS (FIRST 20) =====")
+
+          links = re.findall(
+              r'<a\b[^>]*href=["\'](https://item\.rakuten\.co\.jp/[^"\']+)["\'][^>]*>(.*?)</a>',
+              text,
+              flags=re.I | re.S
+          )
+
+          seen = set()
+          count = 0
+
+          for href, raw_title in links:
+              title = re.sub(r"<[^>]+>", " ", raw_title)
+              title = html.unescape(title)
+              title = re.sub(r"\s+", " ", title).strip()
+
+              if not title:
+                  continue
+
+              if href in seen:
+                  continue
+
+              seen.add(href)
+              count += 1
+
+              print(f"{count}位")
+              print("商品名:", title)
+              print("URL:", href)
+              print()
+
+              if count >= 20:
+                  break
+
+          print("取得した商品リンク数:", len(seen))
+          PY
+
+      - name: Save ranking HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: rakuten-weekly-ranking
+          path: rakuten-ranking.html
