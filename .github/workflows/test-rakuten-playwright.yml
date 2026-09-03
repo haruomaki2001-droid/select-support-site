@@ -1,0 +1,71 @@
+name: Test Rakuten Weekly Ranking with Playwright
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-ranking:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install Playwright
+        run: |
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Access Rakuten ranking
+        run: |
+          node <<'EOF'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true
+            });
+
+            const page = await browser.newPage({
+              viewport: { width: 1280, height: 2000 }
+            });
+
+            const url = 'https://ranking.rakuten.co.jp/weekly/560202/';
+
+            console.log('楽天週間ランキングへアクセスします');
+
+            const response = await page.goto(url, {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000
+            });
+
+            console.log('HTTP status:', response ? response.status() : 'なし');
+            console.log('ページタイトル:', await page.title());
+            console.log('URL:', page.url());
+
+            const bodyText = await page.locator('body').innerText();
+
+            console.log('本文文字数:', bodyText.length);
+            console.log('===== 本文先頭 =====');
+            console.log(bodyText.substring(0, 5000));
+
+            await page.screenshot({
+              path: 'rakuten-ranking.png',
+              fullPage: true
+            });
+
+            await browser.close();
+          })();
+          EOF
+
+      - name: Upload screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rakuten-ranking-test
+          path: rakuten-ranking.png
