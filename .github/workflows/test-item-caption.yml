@@ -20,6 +20,8 @@ jobs:
         run: |
           set -euo pipefail
           curl -s -G "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701" \
+            -H "Referer: https://supisho.com" \
+            -H "Origin: https://supisho.com" \
             --data-urlencode "applicationId=${APP_ID}" \
             --data-urlencode "accessKey=${ACCESS_KEY}" \
             --data-urlencode "keyword=${KEYWORD}" \
@@ -32,4 +34,3 @@ jobs:
         with:
           name: rakuten-item-caption
           path: response.json
-          
