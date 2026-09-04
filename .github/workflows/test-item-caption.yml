@@ -19,7 +19,7 @@ jobs:
           KEYWORD: ${{ github.event.inputs.keyword }}
         run: |
           set -euo pipefail
-          curl -s -G "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601" \
+          curl -s -G "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701" \
             --data-urlencode "applicationId=${APP_ID}" \
             --data-urlencode "accessKey=${ACCESS_KEY}" \
             --data-urlencode "keyword=${KEYWORD}" \
