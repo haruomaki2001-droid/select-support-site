@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Call IchibaItem Search API
         env:
-          APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          APP_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
           KEYWORD: ${{ github.event.inputs.keyword }}
         run: |
@@ -32,3 +32,4 @@ jobs:
         with:
           name: rakuten-item-caption
           path: response.json
+          
