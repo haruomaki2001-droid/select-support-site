@@ -1,0 +1,32 @@
+name: Test Rakuten itemCaption
+
+on:
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: "検索キーワード"
+        required: true
+        default: "moto g66j 5G"
+
+jobs:
+  test-item-caption:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call IchibaItem Search API
+        env:
+          APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          KEYWORD: ${{ github.event.inputs.keyword }}
+        run: |
+          set -euo pipefail
+          curl -s -G "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601" \
+            --data-urlencode "applicationId=${APP_ID}" \
+            --data-urlencode "keyword=${KEYWORD}" \
+            --data-urlencode "elements=itemName,itemCaption,itemUrl" \
+            -o response.json
+          cat response.json
+
+      - name: Save response
+        uses: actions/upload-artifact@v4
+        with:
+          name: rakuten-item-caption
+          path: response.json
