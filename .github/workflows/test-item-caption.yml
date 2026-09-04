@@ -1,21 +1,30 @@
-name: Test Rakuten itemCaption
+name: Test Rakuten itemCaption (target item)
 
 on:
   workflow_dispatch:
     inputs:
+      shopCode:
+        description: "ショップコード(URLの item.rakuten.co.jp/【ここ】/...)"
+        required: true
+        default: "superdeal"
       keyword:
-        description: "検索キーワード"
+        description: "検索キーワード(絞り込み用)"
         required: true
         default: "moto g66j 5G"
+      itemUrlMatch:
+        description: "URLに含まれる商品番号(部分一致で狙った商品を特定)"
+        required: true
+        default: "15337motog66j5g2506"
 
 jobs:
   test-item-caption:
     runs-on: ubuntu-latest
     steps:
-      - name: Call IchibaItem Search API
+      - name: Call IchibaItem Search API (by shopCode)
         env:
           APP_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
           ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          SHOP_CODE: ${{ github.event.inputs.shopCode }}
           KEYWORD: ${{ github.event.inputs.keyword }}
         run: |
           set -euo pipefail
@@ -24,10 +33,37 @@ jobs:
             -H "Origin: https://supisho.com" \
             --data-urlencode "applicationId=${APP_ID}" \
             --data-urlencode "accessKey=${ACCESS_KEY}" \
+            --data-urlencode "shopCode=${SHOP_CODE}" \
             --data-urlencode "keyword=${KEYWORD}" \
-            --data-urlencode "elements=itemName,itemCaption,itemUrl" \
+            --data-urlencode "hits=30" \
+            --data-urlencode "elements=itemName,itemCode,itemCaption,itemUrl" \
             -o response.json
-          cat response.json
+          echo "===== RAW COUNT ====="
+          python3 -c "import json;d=json.load(open('response.json'));print(len(d.get('Items',[])), 'items')"
+
+      - name: Filter target item by itemUrl match
+        env:
+          MATCH: ${{ github.event.inputs.itemUrlMatch }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          match = os.environ["MATCH"]
+          data = json.load(open("response.json"))
+          items = data.get("Items", [])
+          found = [i["Item"] for i in items if match in i["Item"].get("itemUrl", "")]
+          print(f"===== {len(found)} MATCHED ITEM(S) for '{match}' =====")
+          for item in found:
+              print("itemName:", item.get("itemName"))
+              print("itemCode:", item.get("itemCode"))
+              print("itemUrl:", item.get("itemUrl"))
+              print("---- itemCaption ----")
+              print(item.get("itemCaption"))
+              print()
+          if not found:
+              print("一致する商品が見つかりませんでした。全itemUrl一覧:")
+              for i in items:
+                  print(" -", i["Item"].get("itemUrl"))
+          PY
 
       - name: Save response
         uses: actions/upload-artifact@v4
